@@ -49,35 +49,6 @@ server/                      Express API
   tests/                     node:test (no database or network needed)
 ```
 
-## 1. Google sign-in setup (once)
-
-1. Go to <https://console.cloud.google.com>, create a project (e.g. `tech-blog`).
-2. **APIs & Services → OAuth consent screen**: choose *External*, fill in the app name and your email. Under *Audience*, click **Publish app** so anyone can sign in (the basic scopes email/profile need no review). Left in "Testing", only listed test users can sign in.
-3. **APIs & Services → Credentials → Create credentials → OAuth client ID → Web application.**
-   - *Authorized JavaScript origins*: `http://localhost:3000` (add your Vercel front-end URL later).
-   - No redirect URIs are needed.
-4. Copy the **Client ID**.
-
-## 2. Run locally
-
-Node 18+ and a MongoDB connection string (free Atlas M0 works).
-
-```bash
-# API
-cd server
-cp .env.example .env     # fill in MONGODB_URI, GOOGLE_CLIENT_ID, JWT_SECRET, ADMIN_EMAILS
-openssl rand -hex 32     # run this and paste the output as JWT_SECRET
-npm install
-npm run dev              # http://localhost:5001
-
-# React app (second terminal)
-cd client
-cp .env.example .env     # set REACT_APP_GOOGLE_CLIENT_ID (same client id)
-npm install
-npm start                # http://localhost:3000
-```
-
-Restart both after changing a `.env` file. Open http://localhost:3000 (not 5001), click **Sign in**.
 
 ## API
 
@@ -95,27 +66,6 @@ Restart both after changing a `.env` file. Open http://localhost:3000 (not 5001)
 
 Images: .jpg/.png, max 4MB (Vercel's request limit).
 
-## 3. Deploy to Vercel (free)
-
-Two Vercel projects from this one repo.
-
-**API project** (Root Directory: `server`). Environment variables:
-`MONGODB_URI`, `GOOGLE_CLIENT_ID`, `JWT_SECRET`, `ADMIN_EMAILS`, and `CLIENT_ORIGIN` (the client URL, no trailing slash, once you have it).
-
-**Client project** (Root Directory: `client`). Environment variable: `REACT_APP_GOOGLE_CLIENT_ID`.
-Before deploying, edit `client/vercel.json` and replace `YOUR-API-PROJECT.vercel.app` with your API project's domain. This rewrite is what makes `/api/*` same-origin.
-
-Then:
-1. In Atlas → Network Access, allow `0.0.0.0/0`.
-2. In Google Cloud → Credentials, add the client's Vercel URL to *Authorized JavaScript origins*.
-3. Set `CLIENT_ORIGIN` on the API project and redeploy it.
-
-## Moving data from the old MySQL version
-
-Migrated posts have no owner, so only admins can edit/delete them.
-1. Copy the old `back-end/uploads/` folder to `server/uploads/`
-2. Add `MYSQL_URL` and `MONGODB_URI` to `server/.env`
-3. `cd server && npm run migrate` (safe to re-run)
 
 ## Tests
 
